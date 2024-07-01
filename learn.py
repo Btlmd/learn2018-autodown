@@ -25,7 +25,7 @@ urllib.request.install_opener(opener)
 err404 = '\r\n\r\n\r\n<script type="text/javascript">\r\n\tlocation.href="/";\r\n</script>'
 
 def get_prefix(c):
-    return os.path.join(c['_base_dirname'], c['xnxq'], c['kcm'] + "-" + c['_type'])
+    return os.path.join(c['_base_dirname'], c['_type'], c['xnxq'], c['kcm'])
 
 
 def get_xsrf_token():
