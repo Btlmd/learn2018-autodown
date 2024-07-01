@@ -24,6 +24,9 @@ opener = urllib.request.build_opener(handler)
 urllib.request.install_opener(opener)
 err404 = '\r\n\r\n\r\n<script type="text/javascript">\r\n\tlocation.href="/";\r\n</script>'
 
+def get_prefix(c):
+    return os.path.join(c['_base_dirname'], c['xnxq'], c['kcm'] + "-" + c['_type'])
+
 
 def get_xsrf_token():
     cookie_obj = cookie._cookies.get('learn.tsinghua.edu.cn', dict()).get('/', dict()).get('XSRF-TOKEN', None)
@@ -156,7 +159,7 @@ def build_notify(s):
 
 
 def sync_notify(c):
-    pre = os.path.join(c['kcm'], '公告')
+    pre = os.path.join(get_prefix(c), '公告')
     if not os.path.exists(pre):
         os.makedirs(pre)
     try:
@@ -188,7 +191,7 @@ def sync_notify(c):
 
 def sync_file(c):
     now = os.getcwd()
-    pre = os.path.join(c['kcm'], '课件')
+    pre = os.path.join(get_prefix(c), '课件')
     if not os.path.exists(pre):
         os.makedirs(pre)
 
@@ -246,7 +249,7 @@ def sync_file(c):
 
 
 def sync_info(c):
-    pre = os.path.join(c['kcm'], '课程信息.txt')
+    pre = os.path.join(get_prefix(c), '课程信息.txt')
     try:
         if c['_type'] == 'student':
             html = get_page('/f/wlxt/kc/v_kcxx_jskcxx/student/beforeXskcxx?wlkcid=%s&sfgk=-1' % c['wlkcid'])
@@ -274,7 +277,7 @@ def append_hw_csv(fname, stu):
 
 def sync_hw(c):
     now = os.getcwd()
-    pre = os.path.join(c['kcm'], '作业')
+    pre = os.path.join(get_prefix(c), '作业')
     if not os.path.exists(pre):
         os.makedirs(pre)
     data = {'aoData': [{"name": "wlkcid", "value": c['wlkcid']}]}
@@ -339,7 +342,7 @@ def build_discuss(s):
 
 
 def sync_discuss(c):
-    pre = os.path.join(c['kcm'], '讨论')
+    pre = os.path.join(get_prefix(c), '讨论')
     if not os.path.exists(pre):
         os.makedirs(pre)
     try:
@@ -426,6 +429,7 @@ def get_args():
     parser.add_argument("--ignore", nargs='+', type=str, default=[])
     parser.add_argument("--course", nargs='+', type=str, default=[])
     parser.add_argument('-p', "--_pass", type=str, default='.pass')
+    parser.add_argument('-d', '--dirname', type=str, default='downloads', help='Directory to save files')
     parser.add_argument('-c', "--cookie", type=str, default='', help='Netscape HTTP Cookie File')
     args = parser.parse_args()
     return args
@@ -449,11 +453,15 @@ def main(args):
         args.login = login(username, password)
     if args.login:
         courses = get_courses(args)
+        with open(os.path.join(args.dirname, 'courses.json'), 'w') as f:
+            json.dump(courses, f, ensure_ascii=False, indent=4)
+        print(courses)
         for c in courses:
             c['_type'] = {'0': 'teacher', '3': 'student'}[c['jslx']]
-            print('Sync ' + c['xnxq'] + ' ' + c['kcm'])
-            if not os.path.exists(c['kcm']):
-                os.makedirs(c['kcm'])
+            c['_base_dirname'] = args.dirname
+            print('Sync ' + get_prefix(c))
+            if not os.path.exists(get_prefix(c)):
+                os.makedirs(get_prefix(c))
             sync_info(c)
             sync_discuss(c)
             sync_notify(c)
