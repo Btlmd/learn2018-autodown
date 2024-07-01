@@ -455,7 +455,6 @@ def main(args):
         courses = get_courses(args)
         with open(os.path.join(args.dirname, 'courses.json'), 'w') as f:
             json.dump(courses, f, ensure_ascii=False, indent=4)
-        print(courses)
         for c in courses:
             c['_type'] = {'0': 'teacher', '3': 'student'}[c['jslx']]
             c['_base_dirname'] = args.dirname
