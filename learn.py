@@ -453,6 +453,8 @@ def main(args):
         args.login = login(username, password)
     if args.login:
         courses = get_courses(args)
+        if not os.path.exists(args.dirname):
+            os.makedirs(args.dirname)
         with open(os.path.join(args.dirname, 'courses.json'), 'w') as f:
             json.dump(courses, f, ensure_ascii=False, indent=4)
         for c in courses:
